@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ethan Pay | Ethan Digital Academy</title>
+<meta name="description" content="Ethan Pay — central payment portal for the Ethan Digital Academy ecosystem.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#"><span class="mark">E</span><span>ETHAN <b>PAY</b><small>by Ethan Digital Academy</small></span></a>
+  <nav><a href="#services">Services</a><a href="#transactions">Transactions</a><a href="#help">Help</a></nav>
+  <button class="outline" data-open="signin">Sign in</button>
+</header>
+
+<main>
+<section class="hero">
+ <div class="hero-copy">
+  <span class="eyebrow">ETH-PAY • CENTRAL PAYMENT PORTAL</span>
+  <h1>One place for your <span>Ethan payments.</span></h1>
+  <p>View approved charges, make supported payments, submit bank-payment evidence, receive references and keep your Ethan transaction history organised.</p>
+  <div class="actions"><button class="primary" data-open="pay">Make a payment</button><button class="secondary" data-open="verify">Verify payment</button></div>
+  <div class="trust"><span>✓ Clear references</span><span>✓ Payment records</span><span>✓ Approval tracking</span></div>
+ </div>
+ <aside class="paycard">
+   <div class="cardhead"><span>Payment summary</span><span class="status">DEMO PREVIEW</span></div>
+   <label>Service</label><select id="service"><option>Course / Training Fee</option><option>School / Programme Fee</option><option>Certificate Fee</option><option>Ethan Store Order</option><option>Other Approved Charge</option></select>
+   <label>Amount</label><div class="money"><select id="currency"><option>NGN</option><option>USD</option><option>GBP</option><option>EUR</option></select><input id="amount" type="number" min="0" placeholder="0.00"></div>
+   <button class="primary wide" data-open="pay">Continue securely</button>
+   <p class="fine">No real payment is processed in this v1 preview. A verified gateway will be connected before public transactions are enabled.</p>
+ </aside>
+</section>
+
+<section class="stats">
+ <article><b>ETH-PAY</b><span>Platform code</span></article>
+ <article><b>4</b><span>Currency-ready display</span></article>
+ <article><b>1</b><span>Central transaction history</span></article>
+ <article><b>24/7</b><span>Portal access</span></article>
+</section>
+
+<section id="services" class="section">
+ <div class="section-title"><span>PAYMENT SERVICES</span><h2>Built for the Ethan ecosystem</h2><p>Start with the essential payment workflows, then connect each Ethan platform during the integration phase.</p></div>
+ <div class="grid">
+  <article class="tile"><i>01</i><h3>Learning & Training</h3><p>Course fees, professional training and approved academic charges.</p><button data-service="Course / Training Fee">Start payment →</button></article>
+  <article class="tile"><i>02</i><h3>Bank Payment Submission</h3><p>Record a bank transfer reference and submit evidence for administrative review.</p><button data-open="bank">Submit payment →</button></article>
+  <article class="tile"><i>03</i><h3>Certificates</h3><p>Prepare for certificate-related charges when Ethan Certificate is connected.</p><button data-service="Certificate Fee">Select service →</button></article>
+  <article class="tile"><i>04</i><h3>Store Orders</h3><p>Prepare for Ethan Store checkout and order-payment references.</p><button data-service="Ethan Store Order">Select service →</button></article>
+ </div>
+</section>
+
+<section id="transactions" class="section soft">
+ <div class="section-title"><span>YOUR RECORDS</span><h2>Payment history</h2><p>Local preview records are shown below. Signed-in cloud records will be added during Ethan ID integration.</p></div>
+ <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Service</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="history"></tbody></table><div id="empty" class="empty">No payment records yet.</div></div>
+</section>
+
+<section id="help" class="section help">
+ <div><span class="eyebrow">PAYMENT SUPPORT</span><h2>Know the status of every payment.</h2><p>Every submitted transaction receives an Ethan Pay reference. Keep the reference for verification and support.</p></div>
+ <button class="secondary" data-open="verify">Check a reference</button>
+</section>
+</main>
+
+<footer><div><b>ETHAN PAY</b><span>Powered by Ethan Digital Academy</span></div><div><span>pay.ethandigitalacademy.org</span><span>ETH-PAY</span></div></footer>
+
+<div class="modal" id="modal" aria-hidden="true"><div class="dialog">
+<button class="close" id="close">×</button><div id="modalBody"></div>
+</div></div>
+<script src="assets/app.js"></script>
+</body></html>
