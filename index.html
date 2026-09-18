@@ -9,7 +9,7 @@
 <body>
 <header class="topbar">
   <a class="brand" href="#"><span class="mark">E</span><span>ETHAN <b>PAY</b><small>by Ethan Digital Academy</small></span></a>
-  <nav><a href="#services">Services</a><a href="#transactions">Transactions</a><a href="#help">Help</a></nav>
+  <nav><a href="#services">Services</a><a href="#transactions">Transactions</a><a href="#dashboard">Payment Centre</a><a href="#operations">Operations</a><a href="#help">Help</a></nav>
   <button class="outline" data-open="signin">Sign in</button>
 </header>
 
@@ -53,6 +53,34 @@
  <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Service</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="history"></tbody></table><div id="empty" class="empty">No payment records yet.</div></div>
 </section>
 
+
+<section id="dashboard" class="section">
+ <div class="section-title"><span>PAYMENT CENTRE</span><h2>More than a payment button</h2><p>Manage references, receipts, manual submissions and payment records from one Ethan Pay workspace.</p></div>
+ <div class="grid">
+  <article class="tile"><i>01</i><h3>Payment References</h3><p>Create traceable Ethan Pay references before a supported payment is processed.</p><button data-open="pay">Create reference →</button></article>
+  <article class="tile"><i>02</i><h3>Receipt Centre</h3><p>Open a recorded transaction and generate a printable preview receipt.</p><button data-open="receipt">Find receipt →</button></article>
+  <article class="tile"><i>03</i><h3>Manual Payment Review</h3><p>Submit transfer details for later administrative verification.</p><button data-open="bank">Submit transfer →</button></article>
+  <article class="tile"><i>04</i><h3>Payment Status</h3><p>Check whether a reference is awaiting gateway, pending review, verified or unsuccessful.</p><button data-open="verify">Check status →</button></article>
+ </div>
+</section>
+
+
+<section id="operations" class="section">
+ <div class="section-title"><span>OPERATIONS</span><h2>Complete payment operations workspace</h2><p>Ethan Pay is structured for invoices, receipts, refunds, reconciliation and audit control before a payment gateway is connected.</p></div>
+ <div class="grid">
+  <article class="tile"><i>01</i><h3>Invoices</h3><p>Create a formal payment request with payer, service, amount, currency and due date.</p><button data-open="invoice">Create invoice →</button></article>
+  <article class="tile"><i>02</i><h3>Reconciliation</h3><p>Compare recorded transactions by status and identify items still awaiting review.</p><button data-open="reconcile">Open summary →</button></article>
+  <article class="tile"><i>03</i><h3>Refund Register</h3><p>Record and track refund requests without silently changing the original transaction.</p><button data-open="refund">Record request →</button></article>
+  <article class="tile"><i>04</i><h3>Audit Trail</h3><p>Keep a trace of important local preview actions. The production backend has a dedicated audit table.</p><button data-open="audit">View audit →</button></article>
+ </div>
+</section>
+
+<section id="admin" class="section soft">
+ <div class="section-title"><span>ADMINISTRATION PREVIEW</span><h2>Transaction management</h2><p>This local administration preview demonstrates the workflow. Role-based Ethan ID access and cloud records will replace it during integration.</p></div>
+ <div class="adminbar"><input id="adminSearch" placeholder="Search reference or service"><select id="statusFilter"><option value="">All statuses</option><option>AWAITING GATEWAY</option><option>PENDING REVIEW</option><option>VERIFIED</option><option>UNSUCCESSFUL</option></select><button class="secondary" id="exportCsv">Export CSV</button></div>
+ <div class="tablewrap"><table><thead><tr><th>Reference</th><th>Service</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table><div id="adminEmpty" class="empty">No transactions available.</div></div>
+</section>
+
 <section id="help" class="section help">
  <div><span class="eyebrow">PAYMENT SUPPORT</span><h2>Know the status of every payment.</h2><p>Every submitted transaction receives an Ethan Pay reference. Keep the reference for verification and support.</p></div>
  <button class="secondary" data-open="verify">Check a reference</button>
@@ -64,5 +92,5 @@
 <div class="modal" id="modal" aria-hidden="true"><div class="dialog">
 <button class="close" id="close">×</button><div id="modalBody"></div>
 </div></div>
-<script src="assets/app.js"></script>
+<script src="assets/config.js"></script><script src="assets/app.js"></script>
 </body></html>

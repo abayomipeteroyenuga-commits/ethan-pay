@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s), modal=$("#modal"), body=$("#modalBody");
 const records=JSON.parse(localStorage.getItem("ethanPayRecords")||"[]");
 function ref(){return "ETH-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,8).toUpperCase()}
-function save(){localStorage.setItem("ethanPayRecords",JSON.stringify(records));render()}
+function save(){localStorage.setItem("ethanPayRecords",JSON.stringify(records));render();adminRender()}
 function render(){const h=$("#history"),e=$("#empty");h.innerHTML="";e.style.display=records.length?"none":"block";records.slice().reverse().forEach(r=>{h.innerHTML+=`<tr><td><b>${r.ref}</b></td><td>${r.service}</td><td>${r.currency} ${Number(r.amount).toLocaleString()}</td><td>${r.date}</td><td><span class="pill">${r.status}</span></td></tr>`})}
 function open(type){
  modal.classList.add("show");modal.setAttribute("aria-hidden","false");
@@ -9,6 +9,7 @@ function open(type){
  if(type==="bank") body.innerHTML=`<h2>Submit bank payment</h2><p class="notice">This preview stores the submission on this device only. Cloud upload and administrator approval will be connected later.</p><label>Amount paid</label><input id="bankAmount" type="number" min="1"><label>Bank / transfer reference</label><input id="bankRef" placeholder="Enter transaction reference"><button class="primary wide" id="submitBank">Submit for review</button>`;
  if(type==="verify") body.innerHTML=`<h2>Verify payment reference</h2><label>Ethan Pay reference</label><input id="verifyRef" placeholder="ETH-2026-XXXXXX"><button class="primary wide" id="checkRef">Check reference</button><div id="verifyResult"></div>`;
  if(type==="signin") body.innerHTML=`<h2>Ethan ID sign in</h2><p class="notice">Ethan ID will be connected during the ecosystem integration phase. No separate Ethan Pay password is created in this preview.</p><button class="secondary wide" id="dismiss">Close</button>`;
+ if(type==="receipt") body.innerHTML=`<h2>Receipt Centre</h2><p class="notice">Enter an Ethan Pay reference to open its recorded preview receipt.</p><label>Payment reference</label><input id="receiptRef" placeholder="ETH-2026-XXXXXX"><button class="primary wide" id="findReceipt">Find receipt</button><div id="receiptResult"></div>`;
 }
 document.addEventListener("click",e=>{
  const o=e.target.closest("[data-open]");if(o)open(o.dataset.open);
@@ -20,3 +21,38 @@ document.addEventListener("click",e=>{
 });
 function close(){modal.classList.remove("show");modal.setAttribute("aria-hidden","true")}
 $("#close").onclick=close;modal.addEventListener("click",e=>{if(e.target===modal)close()});render();
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function receiptHtml(r){return `<div class="receipt"><div class="receiptHead"><div><b>ETHAN PAY</b><br><small>Payment Record</small></div><b>${esc(r.status)}</b></div><div class="receiptGrid"><div><b>Reference</b>${esc(r.ref)}</div><div><b>Date</b>${esc(r.date)}</div><div><b>Service</b>${esc(r.service)}</div><div><b>Amount</b>${esc(r.currency)} ${Number(r.amount).toLocaleString()}</div></div><p class="fine">Preview receipt only. A production receipt will only be valid after server-side payment verification.</p><button class="secondary printBtn" onclick="window.print()">Print receipt</button></div>`}
+function adminRender(){
+ const rows=document.querySelector("#adminRows"); if(!rows)return;
+ let q=(document.querySelector("#adminSearch")?.value||"").toLowerCase(), st=document.querySelector("#statusFilter")?.value||"";
+ let list=records.filter(r=>(!q||(r.ref+" "+r.service).toLowerCase().includes(q))&&(!st||r.status===st));
+ rows.innerHTML=list.slice().reverse().map(r=>`<tr><td><b>${esc(r.ref)}</b></td><td>${esc(r.service)}</td><td>${esc(r.currency)} ${Number(r.amount).toLocaleString()}</td><td>${esc(r.date)}</td><td><span class="pill">${esc(r.status)}</span></td><td><div class="actionBtns"><button class="mini" data-receipt="${esc(r.ref)}">Receipt</button>${r.status==="PENDING REVIEW"?`<button class="mini ok" data-status="${esc(r.ref)}|VERIFIED">Verify</button><button class="mini bad" data-status="${esc(r.ref)}|UNSUCCESSFUL">Reject</button>`:""}</div></td></tr>`).join("");
+ document.querySelector("#adminEmpty").style.display=list.length?"none":"block";
+}
+document.addEventListener("input",e=>{if(e.target.id==="adminSearch")adminRender()});
+document.addEventListener("change",e=>{if(e.target.id==="statusFilter")adminRender()});
+document.addEventListener("click",e=>{
+ if(e.target.id==="findReceipt"){let q=document.querySelector("#receiptRef").value.trim().toUpperCase(),r=records.find(x=>x.ref===q);document.querySelector("#receiptResult").innerHTML=r?receiptHtml(r):`<div class="notice">No local record found.</div>`}
+ if(e.target.dataset.receipt){let r=records.find(x=>x.ref===e.target.dataset.receipt);open("receipt");document.querySelector("#receiptResult").innerHTML=receiptHtml(r);document.querySelector("#receiptRef").value=r.ref}
+ if(e.target.dataset.status){let [rf,st]=e.target.dataset.status.split("|"),r=records.find(x=>x.ref===rf);if(r){let old=r.status;r.status=st;auditAdd("STATUS_CHANGED",rf,old+" → "+st);save()}}
+ if(e.target.id==="exportCsv"){let head=["Reference","Service","Amount","Currency","Date","Status"],lines=[head,...records.map(r=>[r.ref,r.service,r.amount,r.currency,r.date,r.status])].map(a=>a.map(x=>`"${String(x).replaceAll('"','""')}"`).join(","));let blob=new Blob([lines.join("\\n")],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ethan-pay-transactions.csv";a.click();URL.revokeObjectURL(a.href)}
+});
+adminRender();
+
+const invoices=JSON.parse(localStorage.getItem("ethanPayInvoices")||"[]");
+const refunds=JSON.parse(localStorage.getItem("ethanPayRefunds")||"[]");
+const audit=JSON.parse(localStorage.getItem("ethanPayAudit")||"[]");
+function auditAdd(action,reference="",detail=""){audit.push({time:new Date().toISOString(),action,reference,detail});localStorage.setItem("ethanPayAudit",JSON.stringify(audit))}
+function invoiceRef(){return "EPI-"+new Date().getFullYear()+"-"+Math.random().toString(36).slice(2,8).toUpperCase()}
+function opsOpen(type){
+ if(type==="invoice"){body.innerHTML=`<h2>Create invoice</h2><p class="notice">Creates a local preview invoice. Cloud persistence will activate with the backend.</p><div class="formgrid"><div><label>Payer name</label><input id="invName"></div><div><label>Email</label><input id="invEmail" type="email"></div><div class="full"><label>Service</label><input id="invService" value="Course / Training Fee"></div><div><label>Amount</label><input id="invAmount" type="number" min="1"></div><div><label>Currency</label><select id="invCurrency"><option>NGN</option><option>USD</option><option>GBP</option><option>EUR</option></select></div><div class="full"><label>Due date</label><input id="invDue" type="date"></div></div><button class="primary wide" id="createInvoice">Create invoice</button><div id="invoiceResult"></div>`}
+ if(type==="reconcile"){let counts={};records.forEach(r=>counts[r.status]=(counts[r.status]||0)+1);body.innerHTML=`<h2>Reconciliation summary</h2><div class="summaryGrid">${Object.entries(counts).map(([k,v])=>`<div><b>${v}</b><span>${esc(k)}</span></div>`).join("")||"<p>No transactions.</p>"}</div><p class="notice">Production reconciliation should compare Ethan Pay records with verified provider/bank records. This preview summarizes Ethan Pay records only.</p>`}
+ if(type==="refund"){body.innerHTML=`<h2>Refund register</h2><p class="dangerNote">This records a refund request only. It does not move money.</p><label>Verified transaction reference</label><input id="refundRef"><label>Amount</label><input id="refundAmount" type="number" min="1"><label>Reason</label><input id="refundReason"><button class="primary wide" id="recordRefund">Record refund request</button><div id="refundResult"></div>`}
+ if(type==="audit"){body.innerHTML=`<h2>Audit trail</h2><div class="auditList">${audit.slice().reverse().map(a=>`<div class="auditItem"><b>${esc(a.action)}</b> ${esc(a.reference)}<br><small>${esc(a.time)} • ${esc(a.detail)}</small></div>`).join("")||"<p>No local audit events yet.</p>"}</div><p class="notice">The production database schema contains a separate audit-log table. Client-side audit data is only a preview.</p>`}
+}
+document.addEventListener("click",e=>{
+ let o=e.target.closest("[data-open]");if(o&&["invoice","reconcile","refund","audit"].includes(o.dataset.open)){open(o.dataset.open);opsOpen(o.dataset.open)}
+ if(e.target.id==="createInvoice"){let name=$("#invName").value.trim(),email=$("#invEmail").value.trim(),amount=Number($("#invAmount").value),service=$("#invService").value.trim(),currency=$("#invCurrency").value,due=$("#invDue").value;if(!name||!email||!amount||!service)return alert("Complete the required invoice fields.");let inv={reference:invoiceRef(),name,email,amount,service,currency,due,status:"UNPAID",created:new Date().toLocaleDateString()};invoices.push(inv);localStorage.setItem("ethanPayInvoices",JSON.stringify(invoices));auditAdd("INVOICE_CREATED",inv.reference,service);$("#invoiceResult").innerHTML=`<div class="invoiceCard"><b>ETHAN PAY INVOICE</b><h3>${esc(inv.reference)}</h3><p>${esc(inv.name)} • ${esc(inv.email)}</p><p>${esc(inv.service)}</p><h2>${esc(inv.currency)} ${inv.amount.toLocaleString()}</h2><p>Due: ${esc(inv.due||"Not specified")} • ${inv.status}</p><button class="secondary printBtn" onclick="window.print()">Print invoice</button></div>`}
+ if(e.target.id==="recordRefund"){let rf=$("#refundRef").value.trim().toUpperCase(),r=records.find(x=>x.ref===rf),amount=Number($("#refundAmount").value),reason=$("#refundReason").value.trim();if(!r||r.status!=="VERIFIED")return $("#refundResult").innerHTML='<div class="notice">A verified local transaction is required.</div>';if(!amount||amount>Number(r.amount)||!reason)return $("#refundResult").innerHTML='<div class="notice">Check the refund amount and reason.</div>';let x={id:"RFD-"+Math.random().toString(36).slice(2,8).toUpperCase(),reference:rf,amount,reason,status:"REQUESTED",date:new Date().toLocaleDateString()};refunds.push(x);localStorage.setItem("ethanPayRefunds",JSON.stringify(refunds));auditAdd("REFUND_REQUESTED",rf,reason);$("#refundResult").innerHTML=`<div class="success">${esc(x.id)} — refund request recorded. No money has moved.</div>`}
+});
