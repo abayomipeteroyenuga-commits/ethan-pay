@@ -137,10 +137,16 @@ app.post('/api/setup/admin', authLimiter, wrap(async (req, res) => {
   const existing = await query("SELECT COUNT(*)::int AS total FROM public.payment_users WHERE role = 'admin'");
   if (Number(existing[0].total) > 0) return res.status(409).json({ error: 'Administrator setup has already been completed.' });
   const passwordHash = await bcrypt.hash(password, 12);
-  const rows = await query(
-    "INSERT INTO public.payment_users(email,full_name,password_hash,role) VALUES($1,$2,$3,'admin') RETURNING id,email,full_name,phone,role",
-    [email, fullName, passwordHash]
-  );
+  const existingUser = await query('SELECT id FROM public.payment_users WHERE email = $1 LIMIT 1', [email]);
+  const rows = existingUser[0]
+    ? await query(
+        "UPDATE public.payment_users SET full_name=$2,password_hash=$3,role='admin',is_active=true,updated_at=now() WHERE id=$1 RETURNING id,email,full_name,phone,role",
+        [existingUser[0].id, fullName, passwordHash]
+      )
+    : await query(
+        "INSERT INTO public.payment_users(email,full_name,password_hash,role) VALUES($1,$2,$3,'admin') RETURNING id,email,full_name,phone,role",
+        [email, fullName, passwordHash]
+      );
   await audit(rows[0].id, 'ADMIN_ACCOUNT_CREATED', 'user', rows[0].id, { email });
   setSession(res, rows[0]);
   res.status(201).json({ user: publicUser(rows[0]) });
@@ -151,6 +157,9 @@ app.post('/api/auth/register', authLimiter, wrap(async (req, res) => {
   const email = cleanEmail(req.body.email);
   const phone = cleanText(req.body.phone, 40);
   const password = String(req.body.password || '');
+  if (email && email === cleanEmail(process.env.BOOTSTRAP_ADMIN_EMAIL || '')) {
+    return res.status(403).json({ error: 'This email is reserved for the Ethan Pay administrator setup.' });
+  }
   if (!fullName || !validEmail(email) || password.length < 12) {
     return res.status(400).json({ error: 'Enter your name, a valid email and a password of at least 12 characters.' });
   }
