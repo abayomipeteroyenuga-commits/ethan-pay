@@ -377,8 +377,10 @@ app.post('/api/admin/invoices', authRequired, adminRequired, wrap(async (req, re
 }));
 
 app.use('/api', (_req, res) => res.status(404).json({ error: 'API endpoint not found.' }));
-app.use(express.static(__dirname, { index: 'index.html', maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 }));
-app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.use('/assets', express.static(path.join(__dirname, 'assets'), { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0, immutable: false }));
+app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/index.html', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('*', (_req, res) => res.status(404).send('Page not found.'));
 
 app.use((err, _req, res, _next) => {
   const message = String(err && err.message || '');
