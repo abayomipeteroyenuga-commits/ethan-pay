@@ -1,0 +1,23 @@
+{
+  "name": "ethan-pay",
+  "version": "4.0.0",
+  "private": true,
+  "description": "ETHAN PAY — secure payment portal and payment operations API for the Ethan ecosystem",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check assets/app.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
